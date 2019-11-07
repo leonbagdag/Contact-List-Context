@@ -1,10 +1,11 @@
 import React from "react";
 import { withRouter } from "react-router-dom";
 import PropTypes from "prop-types";
+import { consumer } from "../store/appContext.js";
 
 class Modal extends React.Component {
 	constructor() {
-		super();
+		super(props);
 		this.state = {
 			// Initialize your state
 		};
