@@ -46,7 +46,8 @@ module.exports = {
       jQuery: 'jquery',
       // In case you imported plugins individually, you must also require them here:
       Util: "exports-loader?Util!bootstrap/js/dist/util",
-      Dropdown: "exports-loader?Dropdown!bootstrap/js/dist/dropdown"
+      Dropdown: "exports-loader?Dropdown!bootstrap/js/dist/dropdown",
+      Modal: "exports-loader?Modal!bootstrap/js/dist/modal"
     }),
     new HtmlWebpackPlugin({
         favicon: '4geeks.ico',

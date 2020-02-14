@@ -1,90 +1,171 @@
-const getState = ({ getStore, setStore }) => {
+const getState = ({ getStore, getActions, setStore }) => {
 	return {
 		store: {
-			contact: [],
-			contacts: [
-				{
-					id: 1,
-					full_name: "Diego Rojas",
-					email: "dsrt1991@gmail.com",
-					phone: "12345678",
-					address: "calle 12345"
-				}
-			]
+			contacts: [],
+			formInput: {},
+			loading: false,
+			contactToDelete: {}
 		},
-
 		actions: {
-			addContact: (name, address, phone, email) => {
-				console.log(
-					JSON.stringify({
-						agenda_slug: "agenda_diego",
-						full_name: name,
-						email: email,
-						phone: phone,
-						address: address
-					})
-				);
-				fetch("https://assets.breatheco.de/apis/fake/contact/", {
-					method: "post",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
-						agenda_slug: "agenda_diego",
-						full_name: name,
-						email: email,
-						phone: phone,
-						address: address
-					})
+			setContactToDelete: contact => {
+				setStore({
+					contactToDelete: {
+						full_name: contact.full_name,
+						id: contact.id
+					}
+				});
+			},
+
+			deleteContact: () => {
+				const store = getStore();
+				setStore({ loading: true });
+				fetch(`https://assets.breatheco.de/apis/fake/contact/${store.contactToDelete.id}`, {
+					//LAL_Agenda_stgo
+					method: "DELETE",
+					mode: "cors",
+					headers: { "Content-Type": "application/json" }
 				})
-					.then(response => console.log(response.json()))
-					.then(() => {
-						fetch("https://assets.breatheco.de/apis/fake/contact/agenda/agenda_diego")
-							.then(response => response.json())
-							.then(data => {
-								console.log(data);
-								setStore({ agenda: data });
-							});
+					.then(response => {
+						if (!response.ok) {
+							throw Error(response.status);
+						}
+						return response.json();
+					})
+					.then(data => {
+						//eslint-disable-next-line
+						console.log("Success:", JSON.stringify(data));
+						getActions().getAllContacts();
+					})
+					.catch(error => {
+						//eslint-disable-next-line
+						console.log(error);
+						setStore({ loading: false });
 					});
 			},
-			editContact: (name, address, phone, email, id, history) => {
-				console.log("$$$$", name, address, phone, email, id);
-				let store = getStore();
-				fetch("https://assets.breatheco.de/apis/fake/contact/" + id, {
-					method: "put",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
-						agenda_slug: "agenda_diego",
-						full_name: name,
-						email: email,
-						phone: phone,
-						address: address
-					})
-				})
-					.then(response => console.log(response.json()))
-					.then(() => {
-						fetch("https://assets.breatheco.de/apis/fake/contact/agenda/agenda_diego")
-							.then(response => response.json())
-							.then(data => {
-								console.log(data);
-								setStore({ agenda: data });
-							});
-					})
-					.then(() => history.push("/"));
-			},
-			deleteContact: id => {
-				console.log(id);
+
+			getAllContacts: () => {
 				const store = getStore();
-				fetch("https://assets.breatheco.de/apis/fake/contact/" + id, {
-					method: "delete",
-					headers: { "Content-Type": "aplication/json" }
-				}).then(() => {
-					fetch("https://assets.breatheco.de/apis/fake/contact/agenda/agenda_diego")
-						.then(response => response.json())
-						.then(data => {
-							setStore({ agenda: data });
+				setStore({ loading: true });
+				fetch("https://assets.breatheco.de/apis/fake/contact/agenda/LAL_Agenda_stgo", {
+					//LAL_Agenda_stgo
+					headers: { "Content-Type": "application/json" },
+					mode: "cors"
+				})
+					.then(response => {
+						if (!response.ok) {
+							throw Error(response.status);
+						}
+						return response.json();
+					})
+					.then(data => {
+						store.contacts = data;
+						setStore({ contacts: store.contacts, loading: false });
+					})
+					.catch(error => {
+						//eslint-disable-next-line
+						console.log(error);
+						setStore({ loading: false });
+					});
+			},
+
+			setEditForm: element_ID => {
+				const store = getStore();
+				store.contacts.forEach(item => {
+					if (item.id === element_ID) {
+						store.formInput = Object.assign(store.formInput, {
+							full_name: item.full_name,
+							email: item.email,
+							agenda_slug: "LAL_Agenda_stgo",
+							address: item.address,
+							phone: item.phone
 						});
+					}
 				});
+				setStore({ formInput: store.formInput });
+			},
+
+			setAddForm: () => {
+				setStore({
+					formInput: {
+						full_name: "",
+						email: "",
+						agenda_slug: "LAL_Agenda_stgo",
+						address: "",
+						phone: ""
+					}
+				});
+			},
+
+			handleChange: event => {
+				const store = getStore();
+				store.formInput[event.target.name] = event.target.value;
+				setStore({ formInput: store.formInput });
+			},
+
+			updateContact: contactID => {
+				const store = getStore();
+				setStore({ loading: true });
+				fetch(`https://assets.breatheco.de/apis/fake/contact/${contactID}`, {
+					//LAL_Agenda_stgo
+					method: "PUT",
+					body: JSON.stringify(store.formInput),
+					mode: "cors",
+					headers: { "Content-Type": "application/json" }
+				})
+					.then(response => {
+						if (!response.ok) {
+							throw Error(response.status);
+						}
+						return response.json();
+					})
+					.then(data => {
+						//eslint-disable-next-line
+						console.log("Success:", JSON.stringify(data));
+						setStore({ loading: false });
+					})
+					.catch(error => {
+						//eslint-disable-next-line
+						console.log(error);
+						setStore({ loading: false });
+					});
+			},
+
+			addNewContact: () => {
+				const store = getStore();
+				setStore({ loading: true });
+				fetch(`https://assets.breatheco.de/apis/fake/contact/`, {
+					//LAL_Agenda_stgo
+					method: "POST",
+					body: JSON.stringify(store.formInput),
+					mode: "cors",
+					headers: { "Content-Type": "application/json" }
+				})
+					.then(response => {
+						if (!response.ok) {
+							throw Error(response.status);
+						}
+						return response.json();
+					})
+					.then(data => {
+						//eslint-disable-next-line
+						console.log("Success:", JSON.stringify(data));
+						setStore({
+							loading: false,
+							formInput: {
+								full_name: "",
+								email: "",
+								agenda_slug: "LAL_Agenda_stgo",
+								address: "",
+								phone: ""
+							}
+						});
+					})
+					.catch(error => {
+						//eslint-disable-next-line
+						console.log(error);
+						setStore({ loading: false });
+					});
 			}
-			// Remember to use the scope: scope.state.store & scope.setState()
 		}
 	};
 };

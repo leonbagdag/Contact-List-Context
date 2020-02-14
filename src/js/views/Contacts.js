@@ -1,37 +1,26 @@
-import React from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { Link } from "react-router-dom";
+import { Context } from "../store/appContext";
+import { ContactCard } from "../component/contactCard";
 
-import ContactCard from "../component/ContactCard.js";
-import Modal from "../component/Modal";
-
-export default class Contacts extends React.Component {
-	constructor() {
-		super();
-		this.state = {
-			showModal: false
-		};
-	}
-
-	render() {
-		return (
-			<div className="container">
-				<div>
-					<p className="text-right my-3">
-						<Link className="btn btn-success" to="/add">
-							Add new contact
-						</Link>
-					</p>
-					<div id="contacts" className="panel-collapse collapse show" aria-expanded="true">
-						<ul className="list-group pull-down" id="contact-list">
-							<ContactCard onDelete={() => this.setState({ showModal: true })} />
-							<ContactCard />
-							<ContactCard />
-							<ContactCard />
-						</ul>
-					</div>
-				</div>
-				<Modal show={this.state.showModal} onClose={() => this.setState({ showModal: false })} />
+export const Contacts = props => {
+	const { store, actions } = useContext(Context);
+	useEffect(() => {
+		//will mount -> get from api contacts
+		actions.getAllContacts();
+	}, []);
+	return (
+		<div className="container-fluid">
+			<div className="container my-4 text-right">
+				<Link to="/add_contact">
+					<button type="button" className="btn btn-success">
+						Add Contact
+					</button>
+				</Link>
 			</div>
-		);
-	}
-}
+			<div className="container">
+				<ContactCard />
+			</div>
+		</div>
+	);
+};

@@ -1,99 +1,102 @@
-import React from "react";
-import { withRouter } from "react-router-dom";
-import PropTypes from "prop-types";
-import MikePhoto from "../../img/m101.jpg";
-import { link } from "react-router-dom";
-import { consumer } from "../store/appContext.js";
+import React, { useContext } from "react";
+import { Link } from "react-router-dom";
+import { Context } from "../store/appContext";
 
-class ContactCard extends React.Component {
-	constructor(props) {
-		super(props);
-		this.state = {
-			// initialize your state
-		};
-	}
-
-	render() {
+export const ContactCard = () => {
+	const { store, actions } = useContext(Context);
+	if (store.loading) {
 		return (
-			<consumer>
-				{{ Store, actions }} =>{" "}
-				{
-					<li className="list-group-item">
-						<div className="row w-100">
-							<div className="col-12 col-sm-6 col-md-3 px-0">
-								<img
-									src={MikePhoto}
-									alt="Mike Anamendolla"
-									className="rounded-circle mx-auto d-block img-fluid"
-								/>
-							</div>
-
-							<div className="col-12 col-sm-6 col-md-9 text-center text-sm-left">
-								<div className=" float-right">
-									<link to={"edit/" + this.props.id + "/" + this.props.name}>
-										<button className="btn">
-											<i className="fas fa-pencil-alt mr-3" />
-										</button>
-									</link>
-
-									<button
-										className="btn"
-										onClick={() => {
-											actions.deleteContact(this.props.id);
-										}}>
-										<i className="fas fa-trash-alt" />
-									</button>
+			// return spinner while loading from API
+			<div className="fa-3x text-center">
+				<i className="fas fa-spinner fa-spin" />
+			</div>
+		);
+	} else {
+		return (
+			<div className="list-group">
+				{store.contacts.map(item => {
+					return (
+						<div key={item.id} className="list-group-item">
+							<div className="row">
+								<div className="col-md-3 my-2">
+									<img
+										className="mx-auto d-block"
+										src="https://picsum.photos/150"
+										alt="contact-pic"
+										style={{ borderRadius: "150px" }}
+									/>
 								</div>
-								<label className="name lead">{this.props.name}</label>
-								<br />
-								<i className="fas fa-map-marker-alt text-muted mr-3" />
-								<span className="text-muted">{this.props.address}</span>
-								<br />
-								<span
-									className="fa fa-phone fa-fw text-muted mr-3"
-									data-toggle="tooltip"
-									title=""
-									data-original-title="(870) 288-4149"
-								/>
-								<span className="text-muted small">{this.props.phone}</span>
-								<br />
-								<span
-									className="fa fa-envelope fa-fw text-muted mr-3"
-									data-toggle="tooltip"
-									data-original-title=""
-									title=""
-								/>
-								<span className="text-muted small text-truncate">{this.props.email}</span>
+								<div className="col-md-6 my-2">
+									<h4>{item.full_name}</h4>
+									<div style={{ color: "grey", marginTop: "20px" }}>
+										<p className="contact-data">
+											<i className="fas fa-map-marker-alt" />
+											{item.address}
+										</p>
+										<p className="contact-data">
+											<i className="fas fa-phone" />
+											{item.email}
+										</p>
+										<p className="contact-data">
+											<i className="fas fa-envelope" />
+											{item.phone}
+										</p>
+									</div>
+								</div>
+								<div className="col-md-3 text-center my-2">
+									<span className="mr-5">
+										<Link to={`/edit_contact/${item.id}`} style={{ color: "black" }}>
+											<i className="fas fa-pencil-alt" />
+										</Link>
+									</span>
+									<span>
+										<i
+											className="fas fa-trash-alt pointer"
+											type="button"
+											data-toggle="modal"
+											data-target="#exampleModal"
+											onClick={() => actions.setContactToDelete(item)}
+										/>
+									</span>
+								</div>
 							</div>
 						</div>
-					</li>
-				}
-				}
-			</consumer>
+					);
+				})}
+				<div
+					className="modal fade"
+					id="exampleModal"
+					tabIndex="-1"
+					role="dialog"
+					aria-labelledby="exampleModalLabel"
+					aria-hidden="true">
+					<div className="modal-dialog" role="document">
+						<div className="modal-content">
+							<div className="modal-header">
+								<h5 className="modal-title" id="exampleModalLabel">
+									DELETE
+								</h5>
+								<button type="button" className="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div className="modal-body">¿Quieres eliminar a {store.contactToDelete.full_name}?</div>
+							<div className="modal-footer">
+								<button type="button" className="btn btn-primary" data-dismiss="modal">
+									Cancel
+								</button>
+								<button
+									type="button"
+									className="btn btn-danger"
+									data-dismiss="modal"
+									onClick={() => actions.deleteContact()}>
+									Delete Contact
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
 		);
 	}
-}
-
-/**
- * Define the data-types for
- * your component's properties
- **/
-ContactCard.propTypes = {
-	history: PropTypes.object,
-	onDelete: PropTypes.func,
-	name: PropTypes.string,
-	address: PropTypes.string,
-	phone: PropTypes.string,
-	email: PropTypes.string,
-	id: PropTypes.string,
-	position: PropTypes.number
 };
-
-/**
- * Define the default values for
- * your component's properties
- **/
-ContactCard.defaultProps = {
-	onDelete: null
-};
-export default ContactCard;
